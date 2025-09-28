@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>报告草案确认</h2>
+<div class="mb-3">
+  <h4>{{ package.company.name }} - {{ package.company.reporting_year }}年</h4>
+  <p>行业：{{ package.company.industry }}｜地区：{{ package.company.region }}</p>
+  <p>战略重点：{{ package.company.strategy_focus or '待补充' }}</p>
+</div>
+<div class="accordion" id="reviewAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingStakeholder">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#stakeholder" aria-expanded="true" aria-controls="stakeholder">
+        利益相关方分析
+      </button>
+    </h2>
+    <div id="stakeholder" class="accordion-collapse collapse show" aria-labelledby="headingStakeholder">
+      <div class="accordion-body">
+        <ul>
+          {% for stakeholder in package.stakeholder_map %}
+          <li><strong>{{ stakeholder.category }}</strong>（优先级：{{ stakeholder.priority }}）<br>
+            关注点：{{ stakeholder.expectations | join('; ') }}<br>
+            沟通渠道：{{ stakeholder.engagement_channels | join(', ') }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingMateriality">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#materiality" aria-expanded="false" aria-controls="materiality">
+        重要性议题矩阵
+      </button>
+    </h2>
+    <div id="materiality" class="accordion-collapse collapse" aria-labelledby="headingMateriality">
+      <div class="accordion-body">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th>议题</th><th>影响分</th><th>重要性分</th><th>相关标准</th></tr></thead>
+          <tbody>
+            {% for topic in package.materiality_matrix.topics %}
+            <tr>
+              <td>{{ topic.name }}</td>
+              <td>{{ topic.impact_score }}</td>
+              <td>{{ topic.influence_score }}</td>
+              <td>{{ topic.sse_reference }}{% if topic.gri_reference %}<br>{{ topic.gri_reference }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingDocs">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#docs" aria-expanded="false" aria-controls="docs">
+        过程性文件
+      </button>
+    </h2>
+    <div id="docs" class="accordion-collapse collapse" aria-labelledby="headingDocs">
+      <div class="accordion-body">
+        {% for document in package.process_documents %}
+        <div class="card mb-2">
+          <div class="card-body">
+            <h5 class="card-title">{{ document.title }} <small class="text-muted">({{ document.identifier }})</small></h5>
+            <p class="card-text">{{ document.summary }}</p>
+            <ul>
+              {% for key, value in document.details.items() %}
+              <li><strong>{{ key }}：</strong>{{ value }}</li>
+              {% endfor %}
+            </ul>
+            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('download', package_id=package.package_id, artifact=document.identifier) }}">下载</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingReport">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#report" aria-expanded="false" aria-controls="report">
+        报告草案正文
+      </button>
+    </h2>
+    <div id="report" class="accordion-collapse collapse" aria-labelledby="headingReport">
+      <div class="accordion-body">
+        <pre class="report-preview">{{ package.compiled_report }}</pre>
+        <a class="btn btn-outline-secondary" href="{{ url_for('download', package_id=package.package_id, artifact='report') }}">下载草案</a>
+      </div>
+    </div>
+  </div>
+</div>
+<hr>
+<h3>确认与反馈</h3>
+<form method="post" class="row g-3">
+  <div class="col-12">
+    <label class="form-label">请选择已确认的章节</label>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="利益相关方分析" name="confirmed_sections" id="chkStakeholder">
+      <label class="form-check-label" for="chkStakeholder">利益相关方分析</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="重要性议题矩阵" name="confirmed_sections" id="chkMateriality">
+      <label class="form-check-label" for="chkMateriality">重要性议题矩阵</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="政策与同业对标" name="confirmed_sections" id="chkBenchmark">
+      <label class="form-check-label" for="chkBenchmark">政策与同业对标</label>
+    </div>
+  </div>
+  <div class="col-12">
+    <label class="form-label">补充说明 / 修改意见</label>
+    <textarea class="form-control" name="notes" rows="4" placeholder="如需补充指标、案例或修改描述，请在此填写"></textarea>
+  </div>
+  <div class="col-12">
+    <button class="btn btn-primary" type="submit">保存确认记录</button>
+    <a class="btn btn-secondary" href="{{ url_for('packages') }}">返回归档列表</a>
+  </div>
+</form>
+{% endblock %}
