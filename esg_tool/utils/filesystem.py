@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Iterable
 
 from esg_tool.models import ESGReportPackage, ProcessDocument
+from esg_tool.utils.docx_export import (
+    build_process_document_docx,
+    build_report_docx,
+)
 
 
 class ArchiveRepository:
@@ -37,15 +41,23 @@ class ArchiveRepository:
             payload = json.load(fh)
         return ESGReportPackage.parse_obj(payload)
 
-    def export_document(self, package_id: str, document_id: str) -> tuple[str, str]:
+    def export_document(self, package_id: str, document_id: str) -> tuple[str, bytes]:
         package = self.load_package(package_id)
         document: ProcessDocument | None = package.find_document(document_id)
         if document is None:
             raise FileNotFoundError(f"Document {document_id} not found in package {package_id}")
-        filename = f"{document_id}-{document.title.replace(' ', '_')}.json"
-        return filename, document.json(indent=2, ensure_ascii=False)
+        filename = f"{document_id}-{_slugify(document.title)}.docx"
+        content = build_process_document_docx(document)
+        return filename, content
 
-    def export_report(self, package_id: str) -> tuple[str, str]:
+    def export_report(self, package_id: str) -> tuple[str, bytes]:
         package = self.load_package(package_id)
-        filename = f"{package_id}-compiled-report.txt"
-        return filename, package.compiled_report
+        filename = f"{package_id}-report-draft.docx"
+        content = build_report_docx(package)
+        return filename, content
+
+
+def _slugify(value: str) -> str:
+    safe = value.strip().replace(" ", "-")
+    safe = "".join(ch for ch in safe if ch.isalnum() or ch in {"-", "_"})
+    return safe or "document"

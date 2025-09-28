@@ -297,10 +297,10 @@ def download(package_id: str, artifact: str):
     else:
         filename, content = repository.export_document(package_id, artifact)
     return send_file(
-        io.BytesIO(content.encode("utf-8")),
+        io.BytesIO(content),
         as_attachment=True,
         download_name=filename,
-        mimetype="text/plain",
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
 
 
