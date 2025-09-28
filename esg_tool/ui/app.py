@@ -6,6 +6,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional
+from urllib.parse import urlparse
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 
@@ -46,6 +47,9 @@ AVAILABLE_MODELS = [
         "base_url": "https://api.anthropic.com",
     },
 ]
+
+AVAILABLE_MODELS_BY_ID = {model["id"]: model for model in AVAILABLE_MODELS}
+ALLOWED_SETTINGS_KEYS = {"provider", "model_name", "base_url", "api_key"}
 
 
 @dataclass
@@ -115,15 +119,18 @@ def load_settings() -> Dict[str, str]:
         return DEFAULT_SETTINGS.copy()
 
     settings = DEFAULT_SETTINGS.copy()
-    settings.update({k: v for k, v in data.items() if k in settings})
+    settings.update(
+        {k: (str(v).strip() if isinstance(v, str) else v) for k, v in data.items() if k in ALLOWED_SETTINGS_KEYS}
+    )
     return settings
 
 
 def save_settings(settings: Dict[str, str]) -> None:
     """Persist the provided settings to the JSON configuration file."""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    filtered_settings = {k: settings.get(k, "") for k in ALLOWED_SETTINGS_KEYS}
     with CONFIG_FILE.open("w", encoding="utf-8") as fh:
-        json.dump(settings, fh, indent=2)
+        json.dump(filtered_settings, fh, indent=2)
 
 
 app = Flask(__name__, template_folder="templates")
@@ -142,12 +149,23 @@ def settings():
     current_settings = load_settings()
 
     if request.method == "POST":
+        selected_model_id = request.form.get("predefined_model", "").strip() or None
         form_settings = {
             "provider": request.form.get("provider", "").strip(),
             "model_name": request.form.get("model_name", "").strip(),
             "base_url": request.form.get("base_url", "").strip(),
             "api_key": request.form.get("api_key", "").strip(),
         }
+
+        if selected_model_id and selected_model_id in AVAILABLE_MODELS_BY_ID:
+            preset = AVAILABLE_MODELS_BY_ID[selected_model_id]
+            form_settings.update(
+                {
+                    "provider": preset.get("provider", "").strip(),
+                    "model_name": preset.get("model_name", "").strip(),
+                    "base_url": (preset.get("base_url") or "").strip(),
+                }
+            )
 
         errors = _validate_settings(form_settings)
         if errors:
@@ -158,7 +176,8 @@ def settings():
                 "settings.html",
                 settings=current_settings,
                 available_models=AVAILABLE_MODELS,
-                selected_model_id=_detect_selected_model_id(form_settings),
+                selected_model_id=selected_model_id
+                or _detect_selected_model_id(form_settings),
             ), 400
 
         save_settings(form_settings)
@@ -182,6 +201,11 @@ def _validate_settings(settings: Dict[str, str]) -> list[str]:
         errors.append("Model name is required.")
     if not settings.get("api_key"):
         errors.append("API key is required.")
+    base_url = settings.get("base_url", "").strip()
+    if base_url:
+        parsed = urlparse(base_url)
+        if not (parsed.scheme and parsed.netloc):
+            errors.append("Base URL must be a valid absolute URL if provided.")
     return errors
 
 
