@@ -27,7 +27,12 @@ class ArchiveRepository:
         package_dir.mkdir(parents=True, exist_ok=True)
         data_path = package_dir / "package.json"
         with data_path.open("w", encoding="utf-8") as fh:
-            fh.write(package.json(indent=2, ensure_ascii=False))
+            json.dump(
+                package.model_dump(mode="json"),
+                fh,
+                ensure_ascii=False,
+                indent=2,
+            )
         return package.package_id
 
     def list_packages(self) -> Iterable[str]:
@@ -39,7 +44,7 @@ class ArchiveRepository:
         data_path = self._package_dir(package_id) / "package.json"
         with data_path.open("r", encoding="utf-8") as fh:
             payload = json.load(fh)
-        return ESGReportPackage.parse_obj(payload)
+        return ESGReportPackage.model_validate(payload)
 
     def export_document(self, package_id: str, document_id: str) -> tuple[str, bytes]:
         package = self.load_package(package_id)
