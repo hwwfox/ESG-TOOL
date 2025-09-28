@@ -1,0 +1,10 @@
+body {
+  background-color: #f5f7fa;
+}
+.report-preview {
+  background-color: #1f2933;
+  color: #f1f5f9;
+  padding: 1rem;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}

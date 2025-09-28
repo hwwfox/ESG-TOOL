@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>成果归档</h2>
+{% if packages %}
+  <div class="list-group">
+  {% for package in packages %}
+    <a class="list-group-item list-group-item-action" href="{{ url_for('review', package_id=package.package_id) }}">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">{{ package.company.name }} - {{ package.company.reporting_year }}年</h5>
+        <small>{{ package.package_id }}</small>
+      </div>
+      <p class="mb-1">行业：{{ package.company.industry }}；地区：{{ package.company.region }}</p>
+    </a>
+  {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">暂无归档。</p>
+{% endif %}
+{% endblock %}

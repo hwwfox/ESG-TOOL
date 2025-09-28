@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>填写企业信息</h2>
+<form method="post" class="row g-3">
+  <div class="col-md-6">
+    <label class="form-label">企业名称</label>
+    <input class="form-control" type="text" name="name" required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">报告年度</label>
+    <input class="form-control" type="number" name="year" value="2023" required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">所在地区</label>
+    <input class="form-control" type="text" name="region" value="中国">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">所属行业</label>
+    <input class="form-control" type="text" name="industry" placeholder="如：制造业 / 金融业">
+  </div>
+  <div class="col-12">
+    <label class="form-label">企业简介</label>
+    <textarea class="form-control" name="description" rows="3" placeholder="主营业务、核心市场等"></textarea>
+  </div>
+  <div class="col-12">
+    <label class="form-label">战略重点 / 可持续发展愿景</label>
+    <textarea class="form-control" name="strategy" rows="3" placeholder="如：碳中和目标、创新驱动等"></textarea>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">同业企业（每行一个，可选）</label>
+    <textarea class="form-control" name="peer_names" rows="4" placeholder="示例：\n上汽集团\n三一重工"></textarea>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">同业关注点（与上方顺序对应）</label>
+    <textarea class="form-control" name="peer_focus" rows="4" placeholder="示例：\n碳中和路线图\n智能制造"></textarea>
+  </div>
+  <div class="col-12">
+    <button class="btn btn-success" type="submit">生成报告草案</button>
+    <a class="btn btn-secondary" href="{{ url_for('index') }}">返回首页</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-md-7">
+    <h1 class="mb-3">AI 多代理 ESG 报告工作流</h1>
+    <p>该平台结合上交所《可持续发展报告披露指引与编写指南》与 GRI 标准，
+      通过多智能体协同完成利益相关方分析、重要性矩阵构建、政策对标、同业对标及报告草案生成。</p>
+    <h4>工作流结构</h4>
+    <ol>
+      {% for agent in trace %}
+      <li><strong>{{ agent.name }}</strong>：{{ agent.description }}</li>
+      {% endfor %}
+    </ol>
+    <a class="btn btn-primary" href="{{ url_for('start') }}">开始新报告</a>
+  </div>
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">历史归档</div>
+      <div class="card-body">
+        {% if packages %}
+        <ul class="list-group">
+          {% for package in packages %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ package }}</span>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('review', package_id=package) }}">查看</a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">暂无归档，请先运行工作流。</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
