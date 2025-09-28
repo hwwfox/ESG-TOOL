@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · ESG Tool{% endblock %}
+
+{% block content %}
+  <div class="py-5 text-center">
+    <h1 class="mb-3">ESG Workflow Dashboard</h1>
+    <p class="lead">Use the navigation bar to configure AI settings or access workflow features.</p>
+    <div class="mt-4">
+      <a class="btn btn-primary" href="{{ url_for('settings') }}">Configure AI model</a>
+    </div>
+  </div>
+{% endblock %}

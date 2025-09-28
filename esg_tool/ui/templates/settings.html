@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}AI Model Settings · ESG Tool{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-8 col-xl-6">
+      <h1 class="mb-4">AI Model Settings</h1>
+      <p class="text-muted">Configure which language model the ESG workflow should use. You can start with one of the presets or provide a custom configuration.</p>
+      <form method="post" novalidate>
+        <div class="mb-3">
+          <label for="predefined_model" class="form-label">Preset</label>
+          <select class="form-select" id="predefined_model" name="predefined_model">
+            <option value="">Choose a preset…</option>
+            {% for model in available_models %}
+              <option value="{{ model.id }}" {% if model.id == selected_model_id %}selected{% endif %}>{{ model.label }}</option>
+            {% endfor %}
+            <option value="custom" {% if not selected_model_id %}selected{% endif %}>Custom configuration</option>
+          </select>
+          <div class="form-text">Selecting a preset fills in the provider, model name, and base URL fields below.</div>
+        </div>
+        <div class="mb-3">
+          <label for="provider" class="form-label">Provider <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="provider" name="provider" value="{{ settings.provider }}" required>
+        </div>
+        <div class="mb-3">
+          <label for="model_name" class="form-label">Model name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="model_name" name="model_name" value="{{ settings.model_name }}" required>
+        </div>
+        <div class="mb-3">
+          <label for="base_url" class="form-label">Base URL</label>
+          <input type="url" class="form-control" id="base_url" name="base_url" value="{{ settings.base_url }}" placeholder="https://example.com/v1">
+          <div class="form-text">Leave blank if the provider has a default base URL.</div>
+        </div>
+        <div class="mb-3">
+          <label for="api_key" class="form-label">API key <span class="text-danger">*</span></label>
+          <input type="password" class="form-control" id="api_key" name="api_key" value="{{ settings.api_key }}" required>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Save settings</button>
+          <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const presets = {{ available_models | tojson }};
+      const select = document.getElementById('predefined_model');
+      const providerInput = document.getElementById('provider');
+      const modelInput = document.getElementById('model_name');
+      const baseUrlInput = document.getElementById('base_url');
+
+      select.addEventListener('change', function (event) {
+        const selected = presets.find((model) => model.id === event.target.value);
+        if (selected) {
+          providerInput.value = selected.provider;
+          modelInput.value = selected.model_name;
+          baseUrlInput.value = selected.base_url || '';
+        }
+      });
+    });
+  </script>
+{% endblock %}
