@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="mb-3">AI 模型接口设置</h1>
+<p class="text-muted">配置可用的 AI 模型接口参数，包括名称、供应商、接口地址以及默认生成参数。
+保存后，平台将在工作流中优先使用默认勾选的模型。</p>
+<form method="post">
+  <div class="mb-4">
+    <span class="form-text">如需新增模型，可填写下方空白表单；若要删除模型，请清空对应信息后保存。</span>
+  </div>
+  {% for model in models %}
+  <div class="card mb-3 shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>模型配置 {{ loop.index }}</span>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="active_model" id="active_model_{{ model.index }}" value="{{ model.index }}" {% if active_model_index == model.index %}checked{% endif %}>
+        <label class="form-check-label" for="active_model_{{ model.index }}">设为默认</label>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label" for="model_name_{{ model.index }}">显示名称</label>
+          <input type="text" class="form-control" id="model_name_{{ model.index }}" name="models-{{ model.index }}-name" value="{{ model.name }}" placeholder="例如：内部 GPT-4.1 接口">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="model_code_{{ model.index }}">模型标识</label>
+          <input type="text" class="form-control" id="model_code_{{ model.index }}" name="models-{{ model.index }}-model_name" value="{{ model.model_name }}" placeholder="例如：gpt-4.1">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="model_provider_{{ model.index }}">供应商</label>
+          <input type="text" class="form-control" id="model_provider_{{ model.index }}" name="models-{{ model.index }}-provider" value="{{ model.provider }}" placeholder="例如：OpenAI">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="model_base_{{ model.index }}">接口地址</label>
+          <input type="text" class="form-control" id="model_base_{{ model.index }}" name="models-{{ model.index }}-api_base" value="{{ model.api_base }}" placeholder="https://api.example.com/v1">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="model_key_{{ model.index }}">API Key</label>
+          <input type="text" class="form-control" id="model_key_{{ model.index }}" name="models-{{ model.index }}-api_key" value="{{ model.api_key }}" placeholder="仅在本地保存">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="model_temperature_{{ model.index }}">温度</label>
+          <input type="number" step="0.1" min="0" max="2" class="form-control" id="model_temperature_{{ model.index }}" name="models-{{ model.index }}-temperature" value="{{ model.temperature }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="model_tokens_{{ model.index }}">最大 Token</label>
+          <input type="number" min="0" class="form-control" id="model_tokens_{{ model.index }}" name="models-{{ model.index }}-max_tokens" value="{{ model.max_tokens }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="model_timeout_{{ model.index }}">超时（秒，可选）</label>
+          <input type="number" min="0" class="form-control" id="model_timeout_{{ model.index }}" name="models-{{ model.index }}-timeout" value="{{ model.timeout }}">
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="d-flex justify-content-end gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('index') }}">返回首页</a>
+    <button class="btn btn-primary" type="submit">保存设置</button>
+  </div>
+</form>
+{% if current_active %}
+<div class="alert alert-light border mt-4">
+  当前默认模型：<strong>{{ current_active }}</strong>。
+</div>
+{% endif %}
+{% endblock %}
